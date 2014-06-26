@@ -1,0 +1,26 @@
+{
+  "name": "routeswitch",
+  "version": "0.1.0",
+  "description": "A fast regexp-based router",
+  "main": "routeswitch.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gwicke/routeswitch.git"
+  },
+  "keywords": [
+    "regexp",
+    "switch",
+    "router"
+  ],
+  "dependencies": {
+      "regexp-utils": "~0.3.0"
+  },
+  "author": "Gabriel Wicke <gwicke@wikimedia.org>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gwicke/routeswitch/issues"
+  }
+}
