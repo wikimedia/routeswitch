@@ -4,7 +4,7 @@ if (!Promise) {
     require('es6-shim');
 }
 var fs = require('fs');
-var Path = require('Path');
+var Path = require('path');
 var readdir = function(dir) {
     return new Promise(function(resolve, reject) {
         var cb = function(err, res) {
