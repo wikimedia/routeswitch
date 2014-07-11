@@ -1,5 +1,5 @@
 "use strict";
-if (!Promise) {
+if (!global.Promise) {
     // Make sure we have a Promise implementation even on node <= 0.10
     require('es6-shim');
 }
@@ -154,7 +154,7 @@ function makeRouter (path, log) {
  * @param {Function} [optional] log('level', message)
  * @returns {Promise<RouteSwitch>}
  */
-RouteSwitch.prototype.fromHandlers = function fromHandlers(path, log) {
+RouteSwitch.fromHandlers = function fromHandlers(path, log) {
 	// Load routes & handlers
     return loadHandlers(path, log)
     .then(function(handlers) {
