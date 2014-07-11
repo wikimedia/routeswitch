@@ -130,10 +130,12 @@ function loadHandlers (path, log) {
     .then(function(handlerNames) {
         var handlers = [];
         handlerNames.forEach(function(handlerName) {
-            try {
-                handlers.push(require(Path.resolve(path + '/' + handlerName)));
-            } catch (e) {
-                if (log) { log('error/handler', e, handlerName, e.stack); }
+            if (/\.js$/.test(handlerName)) {
+                try {
+                    handlers.push(require(Path.resolve(path + '/' + handlerName)));
+                } catch (e) {
+                    if (log) { log('error/handler', e, handlerName, e.stack); }
+                }
             }
         });
         return handlers;
