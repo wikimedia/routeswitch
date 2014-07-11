@@ -1,4 +1,15 @@
 "use strict";
+var fs = require('fs');
+var Path = require('Path');
+var readdir = function(dir) {
+    return new Promise(function(resolve, reject) {
+        var cb = function(err, res) {
+            if (err) { reject(err); }
+            else { resolve(res); }
+        };
+        return fs.readdir(dir, cb);
+    });
+};
 var RU = require('regexp-utils');
 
 function naiveRFC6570ToRegExp (path) {
@@ -106,6 +117,55 @@ RouteSwitch.prototype.removeRoute = function removeRoute(route) {
         return matcher.route !== route;
     });
     this.matcher = RU.makeRegExpSwitch(this.routes);
+};
+
+
+// Load all handlers from the handlers directory
+function loadHandlers (path, log) {
+    return readdir(path)
+    .then(function(handlerNames) {
+        var handlers = [];
+        handlerNames.forEach(function(handlerName) {
+            try {
+                handlers.push(require(Path.resolve(path + '/' + handlerName)));
+            } catch (e) {
+                if (log) { log('error/handler', e, handlerName, e.stack); }
+            }
+        });
+        return handlers;
+    });
+}
+
+function makeRouter (path, log) {
+}
+
+/**
+ * Create a new router from handlers in a directory.
+ *
+ * Each handler is expected to export a 'path' property. The router will map
+ * to the full module.
+ *
+ * @static
+ * @param {String} path to handle directory
+ * @param {Function} [optional] log('level', message)
+ * @returns {Promise<RouteSwitch>}
+ */
+RouteSwitch.prototype.fromHandlers = function fromHandlers(path, log) {
+	// Load routes & handlers
+    return loadHandlers(path, log)
+    .then(function(handlers) {
+        var allRoutes = [];
+        handlers.forEach(function(handler) {
+            handler.routes.forEach(function(route) {
+                allRoutes.push({
+                    pattern: route.path,
+                    methods: route.methods
+                });
+            });
+        });
+        if (log) { log('notice', path, allRoutes); }
+        return new RouteSwitch(allRoutes);
+    });
 };
 
 module.exports = RouteSwitch;
