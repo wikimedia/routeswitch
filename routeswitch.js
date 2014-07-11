@@ -1,4 +1,8 @@
 "use strict";
+if (!Promise) {
+    // Make sure we have a Promise implementation even on node <= 0.10
+    require('es6-shim');
+}
 var fs = require('fs');
 var Path = require('Path');
 var readdir = function(dir) {
