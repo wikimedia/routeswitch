@@ -134,7 +134,7 @@ function loadHandlers (path, log) {
             try {
                 handlers.push(require(handlerPath));
             } catch (e) {
-                if (log) { log('error/handler', e, handlerName, e.stack); }
+                if (log) { log('error/handler', e, handlerName, e && e.stack); }
             }
         });
         return handlers;
@@ -160,16 +160,27 @@ RouteSwitch.fromHandlers = function fromHandlers(path, log) {
     return loadHandlers(path, log)
     .then(function(handlers) {
         var allRoutes = [];
-        handlers.forEach(function(handler) {
-            handler.routes.forEach(function(route) {
-                allRoutes.push({
-                    pattern: route.path,
-                    methods: route.methods
+        var handlerPromises = handlers.map(function(handler) {
+            if (handler.constructor === Function) {
+                return handler({log: log});
+            } else {
+                return Promise.resolve(handler);
+            }
+        });
+        return Promise.all(handlerPromises)
+        .then(function (handlers) {
+            handlers.forEach(function(handler) {
+                console.log('handler', handler);
+                handler.routes.forEach(function(route) {
+                    allRoutes.push({
+                        pattern: route.path,
+                        methods: route.methods
+                    });
                 });
             });
+            if (log) { log('notice', path, allRoutes); }
+            return new RouteSwitch(allRoutes);
         });
-        if (log) { log('notice', path, allRoutes); }
-        return new RouteSwitch(allRoutes);
     });
 };
 
