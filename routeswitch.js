@@ -22,7 +22,7 @@ function naiveRFC6570ToRegExp (path) {
     var re = RU.escapeRegExp(path)
             // Braces are backslash-escaped here; literal braces are expected
             // to be percent-encoded in the passed-in path.
-            .replace(/\\{(\\\+)?([a-zA-Z0-9]+)\\}/g, function(_, modifier, key) {
+            .replace(/\\{(\\\+)?([a-zA-Z0-9_]+)\\}/g, function(_, modifier, key) {
                 keys.push(key);
                 switch(modifier) {
                     // Reserved expansion {+foo}, matches reserved chars
@@ -163,7 +163,7 @@ function makeRouter (path, log) {
  * @returns {Promise<RouteSwitch>}
  */
 RouteSwitch.fromHandlers = function fromHandlers(path, log) {
-	// Load routes & handlers
+    // Load routes & handlers
     return loadHandlers(path, log)
     .then(function(handlers) {
         var allRoutes = [];
