@@ -28,9 +28,9 @@ function naiveRFC6570ToRegExp (path) {
                     // Reserved expansion {+foo}, matches reserved chars
                     // including slashes
                     // http://tools.ietf.org/html/rfc6570#page-22
-                    case '+': return '(.+)';
+                    case '+': return '(.*)';
                     // Default: only match one path component
-                    default: return '([^\/]+)';
+                    default: return '([^\/]*)';
                 }
             })
             .replace(/\\{+([a-zA-Z0-9]+)\\}/g, function(_, key) {
