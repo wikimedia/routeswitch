@@ -20,22 +20,18 @@ function naiveRFC6570ToRegExp (path) {
     // We only support simple variable names for now
     var keys = [];
     var re = RU.escapeRegExp(path)
-            // Braces are escaped here; literal braces are expected to be
-            // percent-encoded in the passed-in path.
-            .replace(/\\{([+])?([a-zA-Z0-9]+)\\}/g, function(_, modifier, key) {
+            // Braces are backslash-escaped here; literal braces are expected
+            // to be percent-encoded in the passed-in path.
+            .replace(/\\{(\\\+)?([a-zA-Z0-9]+)\\}/g, function(_, modifier, key) {
                 keys.push(key);
                 switch(modifier) {
                     // Reserved expansion {+foo}, matches reserved chars
                     // including slashes
                     // http://tools.ietf.org/html/rfc6570#page-22
-                    case '+': return '(.*)';
+                    case '\\+': return '(.*)';
                     // Default: only match one path component
                     default: return '([^\/]*)';
                 }
-            })
-            .replace(/\\{+([a-zA-Z0-9]+)\\}/g, function(_, key) {
-                keys.push(key);
-                return '([^\/]+)';
             });
     return {
         regexp: new RegExp('^' + re + '$'),
