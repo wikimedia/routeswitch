@@ -22,10 +22,21 @@ function naiveRFC6570ToRegExp (path) {
     var re = RU.escapeRegExp(path)
             // Braces are escaped here; literal braces are expected to be
             // percent-encoded in the passed-in path.
-            .replace(/\\{([a-zA-Z0-9]+)\\}/g, function(_, key) {
-        keys.push(key);
-        return '([^\/]+)';
-    });
+            .replace(/\\{([+])?([a-zA-Z0-9]+)\\}/g, function(_, modifier, key) {
+                keys.push(key);
+                switch(modifier) {
+                    // Reserved expansion {+foo}, matches reserved chars
+                    // including slashes
+                    // http://tools.ietf.org/html/rfc6570#page-22
+                    case '+': return '(.+)';
+                    // Default: only match one path component
+                    default: return '([^\/]+)';
+                }
+            })
+            .replace(/\\{+([a-zA-Z0-9]+)\\}/g, function(_, key) {
+                keys.push(key);
+                return '([^\/]+)';
+            });
     return {
         regexp: new RegExp('^' + re + '$'),
         keys: keys
@@ -170,7 +181,7 @@ RouteSwitch.fromHandlers = function fromHandlers(path, log) {
         return Promise.all(handlerPromises)
         .then(function (handlers) {
             handlers.forEach(function(handler) {
-                console.log('handler', handler);
+                //console.log('handler', handler);
                 handler.routes.forEach(function(route) {
                     allRoutes.push({
                         pattern: route.path,
