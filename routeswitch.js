@@ -43,7 +43,7 @@ function naiveRFC6570ToRegExp (path) {
 function routeToMatcher (route) {
     var pattern = route.pattern,
         keys = [];
-    if (pattern && pattern.constructor === String) {
+    if (pattern !== undefined && pattern.constructor === String) {
         var pathMatcher = naiveRFC6570ToRegExp(pattern);
         keys = pathMatcher.keys;
         pattern = pathMatcher.regexp;
