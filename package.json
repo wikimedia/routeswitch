@@ -1,6 +1,6 @@
 {
   "name": "routeswitch",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "A fast regexp-based router",
   "main": "routeswitch.js",
   "scripts": {
