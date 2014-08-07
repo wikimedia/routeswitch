@@ -46,10 +46,14 @@ function naiveRFC6570ToRegExp (path) {
 function routeToMatcher (route) {
     var pattern = route.pattern,
         keys = [];
-    if (pattern !== undefined && pattern.constructor === String) {
-        var pathMatcher = naiveRFC6570ToRegExp(pattern);
-        keys = pathMatcher.keys;
-        pattern = pathMatcher.regexp;
+    if (pattern !== undefined) {
+        if (pattern.constructor === String) {
+            var pathMatcher = naiveRFC6570ToRegExp(pattern);
+            keys = pathMatcher.keys;
+            pattern = pathMatcher.regexp;
+        }
+    } else {
+        throw new Error('Undefined pattern passed into RouteSwitch:\n' + route);
     }
 
     return {
