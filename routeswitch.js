@@ -5,15 +5,31 @@ if (!global.Promise) {
 }
 var fs = require('fs');
 var Path = require('path');
-var readdir = function(dir) {
+var async = require('async');
+
+var readdirStats = function(dir) {
     return new Promise(function(resolve, reject) {
-        var cb = function(err, res) {
-            if (err) { reject(err); }
-            else { resolve(res); }
+        var dirCB = function(err, names) {
+            if (err) {
+                reject(err);
+            } else {
+                names = names.map(function(name) { return dir + '/' + name; });
+                async.map(names, fs.stat, function(err, stats) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        for (var i = 0; i < stats.length; i++) {
+                            stats[i].name = names[i];
+                        }
+                        resolve(stats);
+                    }
+                });
+            }
         };
-        return fs.readdir(dir, cb);
+        return fs.readdir(dir, dirCB);
     });
 };
+
 var RU = require('regexp-utils');
 
 function naiveRFC6570ToRegExp (path) {
@@ -138,25 +154,56 @@ RouteSwitch.prototype.removeRoute = function removeRoute(route) {
 };
 
 
-// Load all handlers from the handlers directory
-function loadHandlers (path, log) {
-    return readdir(path)
-    .then(function(handlerNames) {
+// Load all handlers from a handler directory hierarchy
+// - require index.js if found
+// - require all *.js files & recurse otherwise
+function requireHandlers (path, log) {
+    return readdirStats(path)
+    .then(function(handlerStats) {
         var handlers = [];
-        handlerNames.forEach(function(handlerName) {
-            var handlerPath = Path.resolve(path + '/' + handlerName);
+        var subDirs = [];
+        handlerStats.forEach(function(stat) {
+            var handlerPath = Path.resolve(stat.name);
             try {
                 handlers.push(require(handlerPath));
             } catch (e) {
-                if (log) { log('error/handler', e, handlerName, e && e.stack); }
+                if (stat.isDirectory()) {
+                    // Try to recurse
+                    subDirs.push(handlerPath);
+                } else if (log) {
+                    log('error/handler', e, stat.name, e && e.stack);
+                }
             }
         });
-        return handlers;
+        if (subDirs.length) {
+            return Promise.all(subDirs.map(function(path) {
+                return requireHandlers(path, log);
+            }))
+            .then(function(subHandlers) {
+                return handlers.concat(subHandlers);
+            });
+        } else {
+            return handlers;
+        }
     });
 }
 
 function makeRouter (path, log) {
 }
+
+RouteSwitch.fromHandlers = function fromHandlers(handlers) {
+    var allRoutes = [];
+    handlers.forEach(function(handler) {
+        //console.log('handler', handler);
+        for (var routePath in handler.paths) {
+            allRoutes.push({
+                pattern: routePath,
+                methods: handler.paths[routePath]
+            });
+        }
+    });
+    return new RouteSwitch(allRoutes);
+};
 
 /**
  * Create a new router from handlers in a directory.
@@ -169,11 +216,25 @@ function makeRouter (path, log) {
  * @param {Function} [optional] log('level', message)
  * @returns {Promise<RouteSwitch>}
  */
-RouteSwitch.fromHandlers = function fromHandlers(path, log) {
+RouteSwitch.loadHandlers = function loadHandlers(paths, log) {
+    var self = this;
+    if (paths.constructor === String) {
+        paths = [paths];
+    }
     // Load routes & handlers
-    return loadHandlers(path, log)
-    .then(function(handlers) {
-        var allRoutes = [];
+    return Promise.all(paths.map(function(path) {
+        return requireHandlers(path, log);
+    }))
+    .then(function(handlerArrays) {
+        var handlers;
+        if (handlerArrays.length > 1) {
+            // concatenate the handler arrays
+            handlers = Array.prototype.concat.apply([], handlerArrays);
+        } else {
+            handlers = handlerArrays[0];
+        }
+
+        // Instantiate all handlers
         var handlerPromises = handlers.map(function(handler) {
             if (handler.constructor === Function) {
                 return handler({log: log});
@@ -183,17 +244,7 @@ RouteSwitch.fromHandlers = function fromHandlers(path, log) {
         });
         return Promise.all(handlerPromises)
         .then(function (handlers) {
-            handlers.forEach(function(handler) {
-                //console.log('handler', handler);
-                handler.routes.forEach(function(route) {
-                    allRoutes.push({
-                        pattern: route.path,
-                        methods: route.methods
-                    });
-                });
-            });
-            if (log) { log('notice', path, allRoutes); }
-            return new RouteSwitch(allRoutes);
+            return self.fromHandlers(handlers);
         });
     });
 };
