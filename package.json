@@ -1,7 +1,7 @@
 {
   "name": "routeswitch",
-  "version": "0.3.4",
-  "description": "A fast regexp-based router",
+  "version": "0.4.0",
+  "description": "A fast regexp-based router. Supports Swagger 2 specs.",
   "main": "routeswitch.js",
   "scripts": {
     "test": "node test.js"
@@ -13,7 +13,9 @@
   "keywords": [
     "regexp",
     "switch",
-    "router"
+    "router",
+    "swagger",
+    "swagger2"
   ],
   "dependencies": {
     "regexp-utils": "~0.3.0",
