@@ -75,7 +75,7 @@ function routeToMatcher (route) {
     return {
         pattern: pattern,
         keys: keys,
-        route: route
+        methods: route.methods
     };
 }
 
@@ -130,8 +130,10 @@ RouteSwitch.prototype.match = function match (path) {
                 params[keys[i]] = m.match[i+1];
             }
         }
+        var matcher = m.matcher;
         return {
-            route: m.matcher.route,
+            pattern: matcher.pattern,
+            methods: matcher.methods,
             params: params
         };
     } else {
@@ -191,6 +193,17 @@ function requireHandlers (path, log) {
 function makeRouter (path, log) {
 }
 
+/**
+ * Create a new router from Swagger 2.0 specs in an array.
+ *
+ * Each handler is expected to export a 'paths' property. The router will map
+ * to the full module.
+ *
+ * @static
+ * @param {array<object>} Array of Swagger 2.0 specs
+ * @param {Function} [optional] log('level', message)
+ * @returns {RouteSwitch}
+ */
 RouteSwitch.fromHandlers = function fromHandlers(handlers) {
     var allRoutes = [];
     handlers.forEach(function(handler) {
@@ -206,17 +219,16 @@ RouteSwitch.fromHandlers = function fromHandlers(handlers) {
 };
 
 /**
- * Create a new router from handlers in a directory.
- *
- * Each handler is expected to export a 'path' property. The router will map
- * to the full module.
+ * Create a new router from handler modules exporting a Swagger 2.0 spec in a
+ * directory. Handler modules can also export a function, which will be
+ * called on load and is then expected to return a Swagger spec.
  *
  * @static
- * @param {String} path to handle directory
+ * @param {array<string>} paths to handler directories
  * @param {Function} [optional] log('level', message)
  * @returns {Promise<RouteSwitch>}
  */
-RouteSwitch.loadHandlers = function loadHandlers(paths, log) {
+RouteSwitch.fromDirectories = function fromDirectories(paths, log) {
     var self = this;
     if (paths.constructor === String) {
         paths = [paths];
