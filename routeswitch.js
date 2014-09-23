@@ -52,21 +52,33 @@ function naiveRFC6570ToRegExp (path) {
                     default: return '([^\\/]*(?=\\/|$))';
                 }
             });
+    var sortKey = path.replace(/{([+\/]?)[^}]+}/g, '{$1}');
     return {
         regexp: new RegExp('^' + re + '$'),
-        keys: keys
+        keys: keys,
+        sortKey: sortKey
     };
 }
 
 // Convert a route into a matcher object
 function routeToMatcher (route) {
-    var pattern = route.pattern,
-        keys = [];
+    var pattern = route.pattern;
+    var keys = [];
+    var sortKey;
     if (pattern !== undefined) {
         if (pattern.constructor === String) {
-            var pathMatcher = naiveRFC6570ToRegExp(pattern);
-            keys = pathMatcher.keys;
-            pattern = pathMatcher.regexp;
+            var regExpMatch = /^re:\/(.*)\/([a-zA-Z]*)$/.exec(pattern);
+            if (regExpMatch) {
+                sortKey = ' ' + pattern;
+                pattern = new RegExp(regExpMatch[1], regExpMatch[2]);
+            } else {
+                var pathMatcher = naiveRFC6570ToRegExp(pattern);
+                keys = pathMatcher.keys;
+                pattern = pathMatcher.regexp;
+                sortKey = pathMatcher.sortKey;
+            }
+        } else {
+            sortKey = ' ' + pattern;
         }
     } else {
         throw new Error('Undefined pattern passed into RouteSwitch:\n' + route);
@@ -75,7 +87,8 @@ function routeToMatcher (route) {
     return {
         pattern: pattern,
         keys: keys,
-        methods: route.methods
+        methods: route.methods,
+        sortKey: sortKey
     };
 }
 
@@ -109,8 +122,19 @@ function routeToMatcher (route) {
 function RouteSwitch ( routes ) {
     // convert string paths in routes to regexps
     this.routes = routes.map(routeToMatcher);
-    this.matcher = RU.makeRegExpSwitch(this.routes);
+    this.makeMatcher();
 }
+
+RouteSwitch.prototype.makeMatcher = function() {
+    this.sortedRoutes = this.routes.sort(function(a,b) {
+        return a.sortKey > b.sortKey;
+    });
+    this.matcher = RU.makeRegExpSwitch(this.sortedRoutes);
+};
+
+RouteSwitch.prototype.toString = function() {
+    return this.sortedRoutes.toString();
+};
 
 
 RouteSwitch.prototype.match = function match (path) {
@@ -144,7 +168,7 @@ RouteSwitch.prototype.match = function match (path) {
 RouteSwitch.prototype.addRoute = function addRoute(route) {
     var matcher = routeToMatcher(route);
     this.routes.push(matcher);
-    this.matcher = RU.makeRegExpSwitch(this.routes);
+    this.matcher = RU.makeMatcher();
 };
 
 
@@ -152,7 +176,7 @@ RouteSwitch.prototype.removeRoute = function removeRoute(route) {
     this.routes = this.routes.filter(function(matcher) {
         return matcher.route !== route;
     });
-    this.matcher = RU.makeRegExpSwitch(this.routes);
+    this.matcher = RU.makeMatcher();
 };
 
 

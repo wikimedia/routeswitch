@@ -19,6 +19,15 @@ Path specs are defined in a subset of [RFC
   empty
 - `/{+foo}` -- matches any non-empty path, including slashes
 
+In the event of route overlaps, the most specific & shortest routes will win:
+
+1) regexps
+2) paths with fixed segments
+3) paths with templated segments
+
+Examples:
+- `/foo/{bar}` gets a higher precedence than `/{some}/{thing}` and `/{some}`
+
 ### Construction
 #### `RouteSwitch.fromDirectory(path, [logMethod]) -> Promise<RouteSwitch>`
 Loads all modules in a directory tree. Modules can either directly export a
