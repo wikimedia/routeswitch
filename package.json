@@ -1,10 +1,10 @@
 {
   "name": "routeswitch",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "A fast regexp-based router. Supports Swagger 2 specs.",
   "main": "routeswitch.js",
   "scripts": {
-    "test": "node test.js"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -21,6 +21,9 @@
     "async": "~0.9.0",
     "es6-shim": "~0.13.0",
     "regexp-utils": "~0.3.0"
+  },
+  "devDependencies": {
+    "mocha": "x.x.x"
   },
   "author": "Gabriel Wicke <gwicke@wikimedia.org>",
   "license": "MIT",
