@@ -47,9 +47,9 @@ function naiveRFC6570ToRegExp (path) {
                     case '\\+': return '(.+)';
                     // Optional path component, separated by a leading slash,
                     // and possibly empty apart from the slash.
-                    case '\\/': return '(?:\\/([^\\/]*)(?=\\/|$))?';
+                    case '\\/': return '(?:\\/([^\\/]+)(?=\\/|$))?';
                     // Default: only match one path component
-                    default: return '([^\\/]*(?=\\/|$))';
+                    default: return '([^\\/]+(?=\\/|$))';
                 }
             });
     var sortKey = path.replace(/{([+\/]?)[^}]+}/g, '{$1}');
@@ -129,6 +129,8 @@ RouteSwitch.prototype.makeMatcher = function() {
     this.sortedRoutes = this.routes.sort(function(a,b) {
         return a.sortKey > b.sortKey;
     });
+    // TODO: remove duplicates & export documentation
+    //console.log(JSON.stringify(this.sortedRoutes, null, 2));
     this.matcher = RU.makeRegExpSwitch(this.sortedRoutes);
 };
 
