@@ -34,7 +34,8 @@ var testData = {
             "2": "thing",
             "foo": "some",
             "bar": "thing"
-        }
+        },
+        "sortKey": "/{}/{}/html"
     },
     '/some/thing/json': {
         "pattern": {
@@ -47,7 +48,8 @@ var testData = {
             "2": "thing",
             "foo": "some",
             "bar": "thing"
-        }
+        },
+        "sortKey": "/{}/{}/json"
     },
     '/some/baz/some/long/path': {
         "pattern": {
@@ -60,7 +62,8 @@ var testData = {
             "2": "some/long/path",
             "foo": "some",
             "path": "some/long/path"
-        }
+        },
+        "sortKey": "/{}/baz/{+}"
     },
     '': {
         "pattern": {
@@ -69,7 +72,8 @@ var testData = {
         "methods": "the empty path",
         "params": {
             "0": ""
-        }
+        },
+        "sortKey": ""
     },
     '/foo': {
         "pattern": {
@@ -80,7 +84,8 @@ var testData = {
             "0": "/foo",
             "1": "foo",
             "foo": "foo"
-        }
+        },
+        "sortKey": "/{}"
     },
     '/foo/': {
         "pattern": {
@@ -91,7 +96,8 @@ var testData = {
             "0": "/foo/",
             "1": "foo",
             "foo": "foo"
-        }
+        },
+        "sortKey": "/{}/"
     },
     '/foo//': {
         "pattern": {
@@ -102,7 +108,8 @@ var testData = {
             "0": "/foo//",
             "1": "foo",
             "foo": "foo"
-        }
+        },
+        "sortKey": "/{}//"
     },
     '/foo//bar': null
 };

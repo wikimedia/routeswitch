@@ -160,7 +160,8 @@ RouteSwitch.prototype.match = function match (path) {
         return {
             pattern: matcher.pattern,
             methods: matcher.methods,
-            params: params
+            params: params,
+            sortKey: matcher.sortKey
         };
     } else {
         return null;
