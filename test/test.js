@@ -17,6 +17,7 @@ var r = new RouteSwitch([
         {pattern: '/{foo}/baz/{+path}', methods: 'looks like some arbitrary path'},
         {pattern: '', methods: 'the empty path'},
         {pattern: '/{foo}', methods: 'resource'},
+        {pattern: '/{foo}/{bar}/json', methods: 'looks like json'},
         {pattern: '/{foo}/', methods: 'listing'},
         {pattern: '/{foo}//', methods: 'doubleslash'},
         {pattern: '/{foo}/{bar}/', methods: 'twoparts'}
