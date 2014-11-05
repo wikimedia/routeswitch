@@ -134,10 +134,12 @@ RouteSwitch.prototype.makeMatcher = function() {
     // TODO: export documentation
     var routes = this.routes;
     var self = this;
+
     for (var i=0; i<routes.length; i++) {
-        for (var j=0; j<routes.length; j++) {
-            if (i !== j && routes[j].sortKey === routes[i].sortKey) {
-                self.sortedRoutes.pop(i);
+        for (var j=i+1; j<=routes.length; j++) {
+            if (j === routes.length || routes[j].sortKey !== routes[i].sortKey) {
+                self.sortedRoutes.splice(i+1, j-i-1);
+                break;
             }
         }
     }
@@ -183,15 +185,23 @@ RouteSwitch.prototype.match = function match (path) {
 RouteSwitch.prototype.addRoute = function addRoute(route) {
     var matcher = routeToMatcher(route);
     this.routes.push(matcher);
-    this.matcher = RU.makeMatcher();
+    this.matcher = this.makeMatcher();
 };
 
+RouteSwitch.prototype.addHandler = function addHandler(handler) {
+    var path = Object.keys(handler)[0];
+    var route = {
+        pattern: path,
+        methods: handler[path]
+    };
+    this.addRoute(route);
+};
 
 RouteSwitch.prototype.removeRoute = function removeRoute(route) {
     this.routes = this.routes.filter(function(matcher) {
         return matcher.route !== route;
     });
-    this.matcher = RU.makeMatcher();
+    this.matcher = this.makeMatcher();
 };
 
 
