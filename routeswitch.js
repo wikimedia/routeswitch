@@ -69,6 +69,7 @@ function routeToMatcher (route) {
         if (pattern.constructor === String) {
             var regExpMatch = /^re:\/(.*)\/([a-zA-Z]*)$/.exec(pattern);
             if (regExpMatch) {
+                // Whitespace here is to make sure that regexps sort before other patterns
                 sortKey = ' ' + pattern;
                 pattern = new RegExp(regExpMatch[1], regExpMatch[2]);
             } else {
@@ -88,7 +89,8 @@ function routeToMatcher (route) {
         pattern: pattern,
         keys: keys,
         methods: route.methods,
-        sortKey: sortKey
+        sortKey: sortKey,
+        path: route.pattern
     };
 }
 
@@ -129,7 +131,19 @@ RouteSwitch.prototype.makeMatcher = function() {
     this.sortedRoutes = this.routes.sort(function(a,b) {
         return a.sortKey > b.sortKey;
     });
-    // TODO: remove duplicates & export documentation
+    // TODO: export documentation
+    var routes = this.routes;
+    var self = this;
+
+    for (var i=0; i<routes.length; i++) {
+        for (var j=i+1; j<=routes.length; j++) {
+            if (j === routes.length || routes[j].sortKey !== routes[i].sortKey) {
+                self.sortedRoutes.splice(i+1, j-i-1);
+                break;
+            }
+        }
+    }
+
     //console.log(JSON.stringify(this.sortedRoutes, null, 2));
     this.matcher = RU.makeRegExpSwitch(this.sortedRoutes);
 };
@@ -171,15 +185,23 @@ RouteSwitch.prototype.match = function match (path) {
 RouteSwitch.prototype.addRoute = function addRoute(route) {
     var matcher = routeToMatcher(route);
     this.routes.push(matcher);
-    this.matcher = RU.makeMatcher();
+    this.matcher = this.makeMatcher();
 };
 
+RouteSwitch.prototype.addHandler = function addHandler(handler) {
+    var path = Object.keys(handler)[0];
+    var route = {
+        pattern: path,
+        methods: handler[path]
+    };
+    this.addRoute(route);
+};
 
 RouteSwitch.prototype.removeRoute = function removeRoute(route) {
     this.routes = this.routes.filter(function(matcher) {
         return matcher.route !== route;
     });
-    this.matcher = RU.makeMatcher();
+    this.matcher = this.makeMatcher();
 };
 
 
