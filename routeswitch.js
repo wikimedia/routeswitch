@@ -185,7 +185,7 @@ RouteSwitch.prototype.match = function match (path) {
 RouteSwitch.prototype.addRoute = function addRoute(route) {
     var matcher = routeToMatcher(route);
     this.routes.push(matcher);
-    this.matcher = this.makeMatcher();
+    this.makeMatcher();
 };
 
 RouteSwitch.prototype.addHandler = function addHandler(handler) {
@@ -201,7 +201,7 @@ RouteSwitch.prototype.removeRoute = function removeRoute(route) {
     this.routes = this.routes.filter(function(matcher) {
         return matcher.route !== route;
     });
-    this.matcher = this.makeMatcher();
+    this.makeMatcher();
 };
 
 
