@@ -124,7 +124,7 @@ function routeToMatcher (route) {
 function RouteSwitch ( routes ) {
     // convert string paths in routes to regexps
     this.routes = routes.map(routeToMatcher);
-    this.makeMatcher();
+    this.matcher = this.makeMatcher();
 }
 
 RouteSwitch.prototype.makeMatcher = function() {
@@ -145,7 +145,7 @@ RouteSwitch.prototype.makeMatcher = function() {
     }
 
     //console.log(JSON.stringify(this.sortedRoutes, null, 2));
-    this.matcher = RU.makeRegExpSwitch(this.sortedRoutes);
+    return RU.makeRegExpSwitch(this.sortedRoutes);
 };
 
 RouteSwitch.prototype.toString = function() {
