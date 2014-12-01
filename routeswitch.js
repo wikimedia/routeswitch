@@ -208,7 +208,7 @@ RouteSwitch.prototype.removeRoute = function removeRoute(route) {
 // Load all handlers from a handler directory hierarchy
 // - require index.js if found
 // - require all *.js files & recurse otherwise
-function requireHandlers (path, log) {
+function loadHandlers (loader, path, log) {
     return readdirStats(path)
     .then(function(handlerStats) {
         var handlers = [];
@@ -216,7 +216,8 @@ function requireHandlers (path, log) {
         handlerStats.forEach(function(stat) {
             var handlerPath = Path.resolve(stat.name);
             try {
-                handlers.push(require(handlerPath));
+                var handler = loader(handlerPath);
+                handlers.push(handler);
             } catch (e) {
                 if (stat.isDirectory()) {
                     // Try to recurse
@@ -228,7 +229,7 @@ function requireHandlers (path, log) {
         });
         if (subDirs.length) {
             return Promise.all(subDirs.map(function(path) {
-                return requireHandlers(path, log);
+                return loadHandlers(loader, path, log);
             }))
             .then(function(subHandlers) {
                 return handlers.concat(subHandlers);
@@ -277,14 +278,17 @@ RouteSwitch.fromHandlers = function fromHandlers(handlers) {
  * @param {Function} [optional] log('level', message)
  * @returns {Promise<RouteSwitch>}
  */
-RouteSwitch.fromDirectories = function fromDirectories(paths, log) {
+RouteSwitch.fromDirectories = function fromDirectories(paths, log, loader) {
+    if (!loader) {
+        loader = require;
+    }
     var self = this;
     if (paths.constructor === String) {
         paths = [paths];
     }
     // Load routes & handlers
     return Promise.all(paths.map(function(path) {
-        return requireHandlers(path, log);
+        return loadHandlers(loader, path, log);
     }))
     .then(function(handlerArrays) {
         var handlers;
