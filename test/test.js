@@ -115,8 +115,25 @@ var testData = {
     '/foo//bar': null
 };
 
+function validator(routeswitch) {
+    return function (method, path, req, expectedRes, done) {
+        return routeswitch.then(function(xs) {
+            var route = xs.match(path);
+            var handler = route.methods[method].request_handler(null, null);
+            return handler.then(function(res) {
+                eq(res, expectedRes);
+                done();
+            }).catch(function(e) {
+                 done(e);
+            });
+        }).catch(function(e) {
+            done(e);
+        })
+    };
+}
 
 describe('Routeswitch', function() {
+
     Object.keys(testData).forEach(function(path) {
         it('match: ' + JSON.stringify(path), function() {
             eq(r.match(path), testData[path]);
@@ -124,20 +141,13 @@ describe('Routeswitch', function() {
     });
 
     it('load recursively from directories', function(done) {
+
         var handlerDirs = [__dirname + '/handlers'];
-        var promise = RouteSwitch.fromDirectories(handlerDirs, console.log)
-        promise.then(function(xs) {
-            var route = xs.routes[0];
-            eq(route.path, '/v1/hello');
-            route.methods.get.request_handler(null, null).then(function(res) {
-                eq(res, { status: 200, body: 'Hello, world!' });
-                done();
-            }).catch(function(e) {
-                done(e);
-            });
-        }).catch(function(e) {
-            done(e);
-        })
+        var routeswitch = RouteSwitch.fromDirectories(handlerDirs, console.log)
+        var request     = validator(routeswitch);
+
+        request('get', '/v1/hello', null, { status: 200, body: 'Hello, world!' }, done);
+
     });
 
 });
