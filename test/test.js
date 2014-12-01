@@ -122,4 +122,22 @@ describe('Routeswitch', function() {
             eq(r.match(path), testData[path]);
         });
     });
+
+    it('load recursively from directories', function(done) {
+        var handlerDirs = [__dirname + '/handlers'];
+        var promise = RouteSwitch.fromDirectories(handlerDirs, console.log)
+        promise.then(function(xs) {
+            var route = xs.routes[0];
+            eq(route.path, '/v1/hello');
+            route.methods.get.request_handler(null, null).then(function(res) {
+                eq(res, { status: 200, body: 'Hello, world!' });
+                done();
+            }).catch(function(e) {
+                done(e);
+            });
+        }).catch(function(e) {
+            done(e);
+        })
+    });
+
 });
