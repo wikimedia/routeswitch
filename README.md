@@ -29,14 +29,18 @@ Examples:
 - `/foo/{bar}` gets a higher precedence than `/{some}/{thing}` and `/{some}`
 
 ### Construction
-#### `RouteSwitch.fromDirectory(path, [logMethod]) -> Promise<RouteSwitch>`
+#### `RouteSwitch.fromDirectory(path, [logMethod], [loader]) -> Promise<RouteSwitch>`
 Loads all modules in a directory tree. Modules can either directly export a
 Swagger 2.0 spec with optional additional data (such as a reference to a
 handler), or they can export a function returning a promise for the spec.
 Returns a promise for a RouteSwitch.
 
+By default, RouteSwitch loads each handler by passing its path to `require()`.
+This can be overridden by providing a custom `loader` argument, implemented as
+a function that takes a path and returns a *spec fragment*.
+
 #### `RouteSwitch.fromHandlers(specs) -> RouteSwitch`
-Builds a RouteSwitch directly from an array of Swagger specs.
+Builds a RouteSwitch directly from an array of spec fragments.
 
 #### `new RouteSwitch(routes) -> RouteSwitch`
 Low-level construction. Routes are objects with the following members:
@@ -62,7 +66,7 @@ Returns null when there is no match. On match, it returns an object containing
   keyed on method (lowercase)
 - `params`: Named parameters defined in the URL pattern
 
-### Example schema
+### Example spec fragment
 ```javascript
 {
     paths: {
