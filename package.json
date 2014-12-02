@@ -23,7 +23,8 @@
     "regexp-utils": "~0.3.0"
   },
   "devDependencies": {
-    "mocha": "x.x.x"
+    "mocha": "x.x.x",
+    "mocha-jshint": "0.0.9"
   },
   "author": "Gabriel Wicke <gwicke@wikimedia.org>",
   "license": "MIT",

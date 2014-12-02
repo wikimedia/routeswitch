@@ -1,4 +1,8 @@
 'use strict';
+
+// mocha defines to avoid JSHint breakage
+/* global describe, it, before, beforeEach, after, afterEach */
+
 var RouteSwitch = require('../routeswitch');
 var deepEqual = require('assert').deepEqual;
 
@@ -128,7 +132,7 @@ function validator(routeswitch) {
             });
         }).catch(function(e) {
             done(e);
-        })
+        });
     };
 }
 
