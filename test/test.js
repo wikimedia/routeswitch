@@ -165,7 +165,7 @@ describe('Routeswitch', function() {
         };
 
         var handlerDirs = [__dirname + '/handlers/configurable'];
-        var routeswitch = RouteSwitch.fromDirectories(handlerDirs, console.log, loader);
+        var routeswitch = RouteSwitch.fromDirectories(handlerDirs, { loader: loader });
         var request     = validator(routeswitch);
 
         request('get', '/v1/fortune', null, { status: 200, body: 'Wax on, wax off.' }, done);

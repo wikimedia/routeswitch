@@ -144,7 +144,6 @@ RouteSwitch.prototype.makeMatcher = function() {
         }
     }
 
-    //console.log(JSON.stringify(this.sortedRoutes, null, 2));
     return RU.makeRegExpSwitch(this.sortedRoutes);
 };
 
@@ -208,7 +207,7 @@ RouteSwitch.prototype.removeRoute = function removeRoute(route) {
 // Load all handlers from a handler directory hierarchy
 // - require index.js if found
 // - require all *.js files & recurse otherwise
-function loadHandlers (loader, path, log) {
+function loadHandlers(path, options) {
     return readdirStats(path)
     .then(function(handlerStats) {
         var handlers = [];
@@ -216,20 +215,20 @@ function loadHandlers (loader, path, log) {
         handlerStats.forEach(function(stat) {
             var handlerPath = Path.resolve(stat.name);
             try {
-                var handler = loader(handlerPath);
+                var handler = options.loader(handlerPath);
                 handlers.push(handler);
             } catch (e) {
                 if (stat.isDirectory()) {
                     // Try to recurse
                     subDirs.push(handlerPath);
-                } else if (log) {
-                    log('error/handler', e, stat.name, e && e.stack);
+                } else {
+                    throw e;
                 }
             }
         });
         if (subDirs.length) {
             return Promise.all(subDirs.map(function(path) {
-                return loadHandlers(loader, path, log);
+                return loadHandlers(path, options);
             }))
             .then(function(subHandlers) {
                 return handlers.concat(subHandlers);
@@ -240,9 +239,6 @@ function loadHandlers (loader, path, log) {
     });
 }
 
-function makeRouter (path, log) {
-}
-
 /**
  * Create a new router from Swagger 2.0 specs in an array.
  *
@@ -251,13 +247,12 @@ function makeRouter (path, log) {
  *
  * @static
  * @param {array<object>} Array of Swagger 2.0 specs
- * @param {Function} [optional] log('level', message)
+ * @param {object} [optional] options to provide custom configuration
  * @returns {RouteSwitch}
  */
 RouteSwitch.fromHandlers = function fromHandlers(handlers) {
     var allRoutes = [];
     handlers.forEach(function(handler) {
-        //console.log('handler', handler);
         for (var routePath in handler.paths) {
             allRoutes.push({
                 pattern: routePath,
@@ -275,12 +270,15 @@ RouteSwitch.fromHandlers = function fromHandlers(handlers) {
  *
  * @static
  * @param {array<string>} paths to handler directories
- * @param {Function} [optional] log('level', message)
+ * @param {object} [optional] options to provide custom configuration
  * @returns {Promise<RouteSwitch>}
  */
-RouteSwitch.fromDirectories = function fromDirectories(paths, log, loader) {
-    if (!loader) {
-        loader = require;
+RouteSwitch.fromDirectories = function fromDirectories(paths, options) {
+    if (!options) {
+        options = {};
+    }
+    if (!options.loader) {
+        options.loader = require;
     }
     var self = this;
     if (paths.constructor === String) {
@@ -288,7 +286,7 @@ RouteSwitch.fromDirectories = function fromDirectories(paths, log, loader) {
     }
     // Load routes & handlers
     return Promise.all(paths.map(function(path) {
-        return loadHandlers(loader, path, log);
+        return loadHandlers(path, options);
     }))
     .then(function(handlerArrays) {
         var handlers;
@@ -301,11 +299,7 @@ RouteSwitch.fromDirectories = function fromDirectories(paths, log, loader) {
 
         // Instantiate all handlers
         var handlerPromises = handlers.map(function(handler) {
-            if (handler.constructor === Function) {
-                return handler({log: log});
-            } else {
-                return Promise.resolve(handler);
-            }
+            return Promise.resolve(handler);
         });
         return Promise.all(handlerPromises)
         .then(function (handlers) {
