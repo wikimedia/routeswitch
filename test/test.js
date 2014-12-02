@@ -147,7 +147,7 @@ describe('Routeswitch', function() {
     it('load plain handlers from disk', function(done) {
 
         var handlerDirs = [__dirname + '/handlers/plain'];
-        var routeswitch = RouteSwitch.fromDirectories(handlerDirs, console.log)
+        var routeswitch = RouteSwitch.fromDirectories(handlerDirs, console.log);
         var request     = validator(routeswitch);
 
         request('get', '/v1/hello', null, { status: 200, body: 'Hello, world!' }, done);
@@ -165,7 +165,7 @@ describe('Routeswitch', function() {
         };
 
         var handlerDirs = [__dirname + '/handlers/configurable'];
-        var routeswitch = RouteSwitch.fromDirectories(handlerDirs, console.log, loader)
+        var routeswitch = RouteSwitch.fromDirectories(handlerDirs, console.log, loader);
         var request     = validator(routeswitch);
 
         request('get', '/v1/fortune', null, { status: 200, body: 'Wax on, wax off.' }, done);
