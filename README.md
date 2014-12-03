@@ -4,7 +4,7 @@ Simple and fast regexp-based switcher on regexps or URL patterns. Supports
 building a switcher from Swagger 2.0 API specs.
 
 [![Build
--Status](https://travis-ci.org/gwicke/routeswitch.svg?branch=master)](https://travis-ci.org/gwicke/routeswitch)
+-Status](https://travis-ci.org/wikimedia/routeswitch.svg?branch=master)](https://travis-ci.org/gwicke/routeswitch)
 
 ## Installation
 `npm install routeswitch`
