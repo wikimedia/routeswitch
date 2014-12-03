@@ -174,7 +174,8 @@ RouteSwitch.prototype.match = function match (path) {
             pattern: matcher.pattern,
             methods: matcher.methods,
             params: params,
-            sortKey: matcher.sortKey
+            sortKey: matcher.sortKey,
+            path: matcher.path
         };
     } else {
         return null;
