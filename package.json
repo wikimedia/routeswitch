@@ -1,6 +1,6 @@
 {
   "name": "routeswitch",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "A fast regexp-based router. Supports Swagger 2 specs.",
   "main": "routeswitch.js",
   "scripts": {
