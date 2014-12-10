@@ -3,6 +3,10 @@
 // mocha defines to avoid JSHint breakage
 /* global describe, it, before, beforeEach, after, afterEach */
 
+
+// It's okay to clobber the global Promise for testing
+global.Promise = require('bluebird');
+
 var RouteSwitch = require('../routeswitch');
 var deepEqual = require('assert').deepEqual;
 
@@ -40,7 +44,8 @@ var testData = {
             "foo": "some",
             "bar": "thing"
         },
-        "sortKey": "/{}/{}/html"
+        "sortKey": "/{}/{}/html",
+        "path": '/{foo}/{bar}/html'
     },
     '/some/thing/json': {
         "pattern": {
@@ -54,7 +59,8 @@ var testData = {
             "foo": "some",
             "bar": "thing"
         },
-        "sortKey": "/{}/{}/json"
+        "sortKey": "/{}/{}/json",
+        'path': '/{foo}/{bar}/json'
     },
     '/some/baz/some/long/path': {
         "pattern": {
@@ -68,7 +74,8 @@ var testData = {
             "foo": "some",
             "path": "some/long/path"
         },
-        "sortKey": "/{}/baz/{+}"
+        "sortKey": "/{}/baz/{+}",
+        'path': '/{foo}/baz/{+path}'
     },
     '': {
         "pattern": {
@@ -78,7 +85,8 @@ var testData = {
         "params": {
             "0": ""
         },
-        "sortKey": ""
+        "sortKey": "",
+        'path': ''
     },
     '/foo': {
         "pattern": {
@@ -90,7 +98,8 @@ var testData = {
             "1": "foo",
             "foo": "foo"
         },
-        "sortKey": "/{}"
+        "sortKey": "/{}",
+        "path": '/{foo}'
     },
     '/foo/': {
         "pattern": {
@@ -102,7 +111,8 @@ var testData = {
             "1": "foo",
             "foo": "foo"
         },
-        "sortKey": "/{}/"
+        "sortKey": "/{}/",
+        "path": '/{foo}/'
     },
     '/foo//': {
         "pattern": {
@@ -114,7 +124,8 @@ var testData = {
             "1": "foo",
             "foo": "foo"
         },
-        "sortKey": "/{}//"
+        "sortKey": "/{}//",
+        "path": '/{foo}//'
     },
     '/foo//bar': null
 };
