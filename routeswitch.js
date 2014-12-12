@@ -1,13 +1,15 @@
 "use strict";
 
-var P = require('bluebird');
+if (!global.Promise || !global.Promise.promisify) {
+    global.Promise = require('bluebird');
+}
 
 var fs = require('fs');
 var Path = require('path');
 var async = require('async');
 
 var readdirStats = function(dir) {
-    return new P(function(resolve, reject) {
+    return new Promise(function(resolve, reject) {
         var dirCB = function(err, names) {
             if (err) {
                 reject(err);
@@ -227,7 +229,7 @@ function loadHandlers(path, options) {
             }
         });
         if (subDirs.length) {
-            return P.all(subDirs.map(function(path) {
+            return Promise.all(subDirs.map(function(path) {
                 return loadHandlers(path, options);
             }))
             .then(function(subHandlers) {
@@ -285,7 +287,7 @@ RouteSwitch.fromDirectories = function fromDirectories(paths, options) {
         paths = [paths];
     }
     // Load routes & handlers
-    return P.all(paths.map(function(path) {
+    return Promise.all(paths.map(function(path) {
         return loadHandlers(path, options);
     }))
     .then(function(handlerArrays) {
@@ -299,9 +301,9 @@ RouteSwitch.fromDirectories = function fromDirectories(paths, options) {
 
         // Instantiate all handlers
         var handlerPromises = handlers.map(function(handler) {
-            return P.resolve(handler);
+            return Promise.resolve(handler);
         });
-        return P.all(handlerPromises)
+        return Promise.all(handlerPromises)
         .then(function (handlers) {
             return self.fromHandlers(handlers);
         });
